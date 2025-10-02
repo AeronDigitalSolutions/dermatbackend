@@ -5,25 +5,25 @@ import mongoose from "mongoose";
 import path from "path";
 
 // Routes
-import authRoutes from "./src/routes/AuthRouter";
-import userRoutes from "./src/routes/UserRouter";
-import adminRoutes from "./src/routes/AdminRouter";
-import categoryRoutes from "./src/routes/Category";
-import clinicRoutes from "./src/routes/clinicRoutes";
-import productRoutes from "./src/routes/productRoutes";
-import appointmentRoutes from "./src/routes/appointmentsRoutes";
-import doctorRoutes from "./src/routes/doctorRoutes";
-import editClinicRoutes from "./src/routes/EditClinicRoutes";
-import serviceRoutes from "./src/routes/serviceRoutes";
-import offerRoutes from "./src/routes/offerRotes";
-import doctorAdminRoutes from "./src/routes/admindoctorRoutes";
-import serviceCategoryRoutes from "./src/routes/serviceCategoryRoutes";
-import clinicCategoryRoutes from "./src/routes/clinicCategoryRoutes";
-import topProductsRoute from "./src/routes/TopProducts";
-import latestOfferRoutes from "./src/routes/latestofferRoutes";
-import latestShortRoutes from "./src/routes/latestshortsRoutes";
-import quizRoutes from "./src/routes/quizRoutes";
-import treatmentShortsRoutes from "./src/routes/treatmentshortsRoutes";
+import authRoutes from "./routes/AuthRouter";
+import userRoutes from "./routes/UserRouter";
+import adminRoutes from "./routes/AdminRouter";
+import categoryRoutes from "./routes/Category";
+import clinicRoutes from "./routes/clinicRoutes";
+import productRoutes from "./routes/productRoutes";
+import appointmentRoutes from "./routes/appointmentsRoutes";
+import doctorRoutes from "./routes/doctorRoutes";
+import editClinicRoutes from "./routes/EditClinicRoutes";
+import serviceRoutes from "./routes/serviceRoutes";
+import offerRoutes from "./routes/offerRotes";
+import doctorAdminRoutes from "./routes/admindoctorRoutes";
+import serviceCategoryRoutes from "./routes/serviceCategoryRoutes";
+import clinicCategoryRoutes from "./routes/clinicCategoryRoutes";
+import topProductsRoute from "./routes/TopProducts";
+import latestOfferRoutes from "./routes/latestofferRoutes";
+import latestShortRoutes from "./routes/latestshortsRoutes";
+import quizRoutes from "./routes/quizRoutes";
+import treatmentShortsRoutes from "./routes/treatmentshortsRoutes";
 
 dotenv.config();
 

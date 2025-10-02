@@ -29,14 +29,24 @@ dotenv.config();
 
 const server = express();
 
-// Middleware
-server.use(cors());
+// -------------------- MIDDLEWARE --------------------
+server.use(
+  cors({
+    origin: "https://drdermatwebsite.vercel.app/", // Replace with your actual Vercel URL
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
 server.use(express.json({ limit: "20mb" }));
 
-// Static uploads
+// -------------------- STATIC FILES --------------------
 server.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-// API routes
+// -------------------- ROOT ROUTE --------------------
+server.get("/", (req, res) => {
+  res.send("✅ Backend is running!");
+});
+
+// -------------------- API ROUTES --------------------
 server.use("/api/auth", authRoutes);
 server.use("/api/users", userRoutes);
 server.use("/api/admins", adminRoutes);
@@ -57,14 +67,16 @@ server.use("/api/latest-shorts", latestShortRoutes);
 server.use("/api/quiz", quizRoutes);
 server.use("/api/treatment-shorts", treatmentShortsRoutes);
 
-// MongoDB connect
+// -------------------- MONGODB CONNECTION --------------------
 mongoose
   .connect(process.env.MONGO_URI as string)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// Start server
+// -------------------- START SERVER --------------------
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-  console.log(`🚀 Server ready on http://localhost:${PORT}`);
+  console.log(`🚀 Server ready on port ${PORT}`);
 });
+
+

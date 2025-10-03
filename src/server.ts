@@ -36,7 +36,7 @@ server.use(
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
-server.use(express.json({ limit: "20mb" }));
+server.use(express.json({ limit: "50mb" }));
 
 // -------------------- STATIC FILES --------------------
 server.use("/uploads", express.static(path.join(process.cwd(), "uploads")));

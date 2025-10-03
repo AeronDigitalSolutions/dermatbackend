@@ -30,12 +30,19 @@ const quizRoutes_1 = __importDefault(require("./routes/quizRoutes"));
 const treatmentshortsRoutes_1 = __importDefault(require("./routes/treatmentshortsRoutes"));
 dotenv_1.default.config();
 const server = (0, express_1.default)();
-// Middleware
-server.use((0, cors_1.default)());
+// -------------------- MIDDLEWARE --------------------
+server.use((0, cors_1.default)({
+    origin: "https://drdermatwebsite.vercel.app", // Replace with your actual Vercel URL
+    methods: ["GET", "POST", "PUT", "DELETE"],
+}));
 server.use(express_1.default.json({ limit: "20mb" }));
-// Static uploads
+// -------------------- STATIC FILES --------------------
 server.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "uploads")));
-// API routes
+// -------------------- ROOT ROUTE --------------------
+server.get("/", (req, res) => {
+    res.send("✅ Backend is running!");
+});
+// -------------------- API ROUTES --------------------
 server.use("/api/auth", AuthRouter_1.default);
 server.use("/api/users", UserRouter_1.default);
 server.use("/api/admins", AdminRouter_1.default);
@@ -55,13 +62,13 @@ server.use("/api/latest-offers", latestofferRoutes_1.default);
 server.use("/api/latest-shorts", latestshortsRoutes_1.default);
 server.use("/api/quiz", quizRoutes_1.default);
 server.use("/api/treatment-shorts", treatmentshortsRoutes_1.default);
-// MongoDB connect
+// -------------------- MONGODB CONNECTION --------------------
 mongoose_1.default
     .connect(process.env.MONGO_URI)
     .then(() => console.log("✅ MongoDB connected"))
     .catch((err) => console.error("❌ MongoDB connection error:", err));
-// Start server
+// -------------------- START SERVER --------------------
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-    console.log(`🚀 Server ready on http://localhost:${PORT}`);
+    console.log(`🚀 Server ready on port ${PORT}`);
 });

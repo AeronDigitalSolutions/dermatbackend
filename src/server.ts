@@ -32,7 +32,7 @@ const server = express();
 // -------------------- MIDDLEWARE --------------------
 server.use(
   cors({
-    origin: "https://drdermatwebsite.vercel.app/", // Replace with your actual Vercel URL
+    origin: "https://drdermatwebsite.vercel.app", // Replace with your actual Vercel URL
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );

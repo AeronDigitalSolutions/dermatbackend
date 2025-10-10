@@ -51,6 +51,10 @@ const CategorySchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
+    exploreImage: {
+        type: String,
+        default: null,
+    },
 }, {
     timestamps: true,
     toJSON: {

@@ -6,12 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const clinicCategory_1 = __importDefault(require("../models/clinicCategory"));
 const router = express_1.default.Router();
-// Create new category
+// ✅ Create new category
 router.post("/", async (req, res) => {
     try {
         const { categoryId, name, imageUrl } = req.body;
         if (!categoryId || !name || !imageUrl) {
-            return res.status(400).json({ message: "Category ID, Name and Image are required" });
+            return res
+                .status(400)
+                .json({ message: "Category ID, Name and Image are required" });
         }
         const existing = await clinicCategory_1.default.findOne({ categoryId });
         if (existing) {
@@ -26,7 +28,7 @@ router.post("/", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
-// Get all categories
+// ✅ Get all categories
 router.get("/", async (_req, res) => {
     try {
         const categories = await clinicCategory_1.default.find().sort({ createdAt: -1 });
@@ -36,22 +38,25 @@ router.get("/", async (_req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
-// Update category
+// ✅ Update category fields
 router.put("/:id", async (req, res) => {
     try {
         const { categoryId, name, imageUrl } = req.body;
         if (!categoryId || !name || !imageUrl) {
-            return res.status(400).json({ message: "Category ID, Name, and Image are required" });
+            return res
+                .status(400)
+                .json({ message: "Category ID, Name, and Image are required" });
         }
-        // Ensure categoryId stays unique (ignore current doc)
-        const existing = await clinicCategory_1.default.findOne({ categoryId, _id: { $ne: req.params.id } });
+        const existing = await clinicCategory_1.default.findOne({
+            categoryId,
+            _id: { $ne: req.params.id },
+        });
         if (existing) {
             return res.status(400).json({ message: "Category ID must be unique" });
         }
         const updated = await clinicCategory_1.default.findByIdAndUpdate(req.params.id, { categoryId, name, imageUrl }, { new: true });
-        if (!updated) {
+        if (!updated)
             return res.status(404).json({ message: "Category not found" });
-        }
         res.json(updated);
     }
     catch (error) {
@@ -59,13 +64,33 @@ router.put("/:id", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
-// Delete category
+// ✅ Upload/replace explore image
+router.put("/explore-image/:id", async (req, res) => {
+    try {
+        const { exploreImage } = req.body;
+        if (!exploreImage) {
+            return res.status(400).json({ message: "Explore image is required" });
+        }
+        const updated = await clinicCategory_1.default.findByIdAndUpdate(req.params.id, { exploreImage }, // ✅ replaces old image
+        { new: true });
+        if (!updated)
+            return res.status(404).json({ message: "Category not found" });
+        res.json({
+            message: "Explore image updated successfully",
+            exploreImage: updated.exploreImage,
+        });
+    }
+    catch (error) {
+        console.error("Error updating explore image:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+// ✅ Delete category
 router.delete("/:id", async (req, res) => {
     try {
         const deleted = await clinicCategory_1.default.findByIdAndDelete(req.params.id);
-        if (!deleted) {
+        if (!deleted)
             return res.status(404).json({ message: "Category not found" });
-        }
         res.json({ message: "Category deleted successfully" });
     }
     catch (error) {

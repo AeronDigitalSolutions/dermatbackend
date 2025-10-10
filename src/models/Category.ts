@@ -2,9 +2,10 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface ICategory extends Document {
-  id: string;       // custom ID like cat-1
+  id: string;
   name: string;
-  imageUrl: string; // base64 string
+  imageUrl: string; // base64
+  exploreImage?: string; // base64
 }
 
 const CategorySchema: Schema = new Schema<ICategory>(
@@ -23,6 +24,10 @@ const CategorySchema: Schema = new Schema<ICategory>(
     imageUrl: {
       type: String,
       required: true,
+    },
+    exploreImage: {
+      type: String,
+      default: null,
     },
   },
   {

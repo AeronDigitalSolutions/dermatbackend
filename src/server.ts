@@ -24,7 +24,8 @@ import latestOfferRoutes from "./routes/latestofferRoutes";
 import latestShortRoutes from "./routes/latestshortsRoutes";
 import quizRoutes from "./routes/quizRoutes";
 import treatmentShortsRoutes from "./routes/treatmentshortsRoutes";
-
+import userProfileRoutes from "./routes/userinformationRoutes";
+import orderRoutes from "./routes/orderRoutes";
 dotenv.config();
 
 const server = express();
@@ -66,6 +67,8 @@ server.use("/api/latest-offers", latestOfferRoutes);
 server.use("/api/latest-shorts", latestShortRoutes);
 server.use("/api/quiz", quizRoutes);
 server.use("/api/treatment-shorts", treatmentShortsRoutes);
+server.use("/api/userprofile", userProfileRoutes);
+server.use("/api/orders", orderRoutes);
 
 // -------------------- MONGODB CONNECTION --------------------
 mongoose

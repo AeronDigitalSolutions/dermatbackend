@@ -34,10 +34,37 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const ClinicCategorySchema = new mongoose_1.Schema({
-    categoryId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    imageUrl: { type: String, required: true },
-    exploreImage: { type: String },
+const OrderSchema = new mongoose_1.Schema({
+    userId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "UserProfile", // name of your user model
+        required: true,
+    },
+    products: [
+        {
+            id: { type: String, required: true },
+            name: { type: String, required: true },
+            quantity: { type: Number, required: true },
+            price: { type: Number, required: true },
+        },
+    ],
+    totalAmount: {
+        type: Number,
+        required: true,
+    },
+    address: {
+        type: {
+            type: String,
+            enum: ["Home", "Work", "Other"],
+            required: true,
+        },
+        address: { type: String, required: true },
+    },
+    paymentStatus: {
+        type: String,
+        enum: ["pending", "success", "failed"],
+        default: "success",
+    },
 }, { timestamps: true });
-exports.default = mongoose_1.default.model("ClinicCategory", ClinicCategorySchema);
+const Order = mongoose_1.default.model("Order", OrderSchema);
+exports.default = Order;

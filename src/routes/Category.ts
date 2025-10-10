@@ -4,70 +4,56 @@ import Category from "../models/Category";
 
 const router = express.Router();
 
-// ✅ Get all categories
-router.get("/", async (_req: Request, res: Response) => {
+router.get("/", async (_req, res) => {
   try {
-    const categories = await Category.find({}, "id name imageUrl").lean();
-    const validCategories = categories.filter(
-      (cat) => cat.id && cat.id.trim() !== ""
-    );
-    res.json(validCategories);
+    const categories = await Category.find({}, "id name imageUrl exploreImage").lean();
+    res.json(categories);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// ✅ Create a new category (auto-generate ID)
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", async (req, res) => {
   try {
-    const { name, imageUrl } = req.body;
+    const { name, imageUrl, exploreImage } = req.body;
     if (!name || !imageUrl) {
-      return res
-        .status(400)
-        .json({ message: "name and imageUrl are required" });
+      return res.status(400).json({ message: "name and imageUrl are required" });
     }
 
-    // Find latest cat-X
-    const lastCategory = await Category.findOne({})
-      .sort({ createdAt: -1 })
-      .lean();
-
+    const last = await Category.findOne({}).sort({ createdAt: -1 }).lean();
     let newId = "cat-1";
-    if (lastCategory && lastCategory.id) {
-      const lastNum = parseInt(lastCategory.id.split("-")[1], 10);
+    if (last && last.id) {
+      const lastNum = parseInt(last.id.split("-")[1], 10);
       newId = `cat-${lastNum + 1}`;
     }
 
-    const category = new Category({ id: newId, name, imageUrl });
+    const category = new Category({ id: newId, name, imageUrl, exploreImage });
     await category.save();
-
     res.status(201).json(category);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// ✅ Update category
-router.put("/:id", async (req: Request, res: Response) => {
+router.put("/:id", async (req, res) => {
   try {
-    const { name, imageUrl } = req.body;
+    const { name, imageUrl, exploreImage } = req.body;
     const updated = await Category.findOneAndUpdate(
       { id: req.params.id },
-      { name, imageUrl },
+      { name, imageUrl, exploreImage },
       { new: true }
     );
-    if (!updated) return res.status(404).json({ message: "Category not found" });
+    if (!updated) return res.status(404).json({ message: "Not found" });
     res.json(updated);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
 });
 
-// ✅ Delete category
-router.delete("/:id", async (req: Request, res: Response) => {
+router.delete("/:id", async (req, res) => {
   try {
     const deleted = await Category.findOneAndDelete({ id: req.params.id });
-    if (!deleted) return res.status(404).json({ message: "Category not found" });
+    if (!deleted) return res.status(404).json({ message: "Not found" });
     res.json({ message: "Category deleted" });
   } catch (error: any) {
     res.status(500).json({ message: error.message });

@@ -34,10 +34,15 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const ClinicCategorySchema = new mongoose_1.Schema({
-    categoryId: { type: String, required: true, unique: true },
+const addressSchema = new mongoose_1.Schema({
+    type: { type: String, enum: ["Home", "Work", "Other"], required: true },
+    address: { type: String, required: true },
+});
+const userProfileSchema = new mongoose_1.Schema({
+    email: { type: String, required: true, unique: true },
     name: { type: String, required: true },
-    imageUrl: { type: String, required: true },
-    exploreImage: { type: String },
+    age: { type: Number, required: true, default: 0 },
+    image: { type: String, required: true, default: "" },
+    addresses: { type: [addressSchema], default: [] },
 }, { timestamps: true });
-exports.default = mongoose_1.default.model("ClinicCategory", ClinicCategorySchema);
+exports.default = mongoose_1.default.model("UserProfile", userProfileSchema);

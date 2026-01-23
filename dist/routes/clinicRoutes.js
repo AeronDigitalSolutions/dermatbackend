@@ -1,140 +1,104 @@
 "use strict";
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// routes/clinics.ts
 const express_1 = __importDefault(require("express"));
 const clinic_1 = __importDefault(require("../models/clinic"));
 const clinicCategory_1 = __importDefault(require("../models/clinicCategory"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const router = express_1.default.Router();
-// ✅ Create Clinic
+/* ================= CREATE CLINIC ================= */
 router.post("/", async (req, res) => {
     try {
-        const { name, mobile, whatsapp, mapLink, address, verified, trusted, images, email, password, category, } = req.body;
-        if (!images || !images.length) {
-            return res.status(400).json({ message: "At least one image is required." });
+        const _a = req.body, { cuc, clinicName, dermaCategory, address, email, doctors } = _a, rest = __rest(_a, ["cuc", "clinicName", "dermaCategory", "address", "email", "doctors"]);
+        if (!cuc || !clinicName || !dermaCategory || !address || !email) {
+            return res.status(400).json({ message: "Missing required fields" });
         }
-        if (!email || !password) {
-            return res.status(400).json({ message: "Email & password are required." });
-        }
-        if (!category) {
-            return res.status(400).json({ message: "Clinic category is required." });
-        }
-        const categoryExists = await clinicCategory_1.default.findById(category);
+        const categoryExists = await clinicCategory_1.default.findById(dermaCategory);
         if (!categoryExists) {
-            return res.status(400).json({ message: "Invalid clinic category." });
+            return res.status(400).json({ message: "Invalid clinic category" });
         }
-        const clinicExists = await clinic_1.default.findOne({ email });
-        if (clinicExists) {
-            return res.status(400).json({ message: "Email already exists." });
+        const exists = await clinic_1.default.findOne({ cuc });
+        if (exists) {
+            return res.status(400).json({ message: "Clinic already exists" });
         }
-        const newClinic = new clinic_1.default({
-            name,
-            mobile,
-            whatsapp,
-            mapLink,
+        const clinic = await clinic_1.default.create(Object.assign({ cuc,
+            clinicName,
+            dermaCategory,
             address,
-            verified,
-            trusted,
-            images,
             email,
-            password,
-            category,
-        });
-        await newClinic.save();
-        res.status(201).json({ message: "Clinic created successfully", clinic: newClinic });
-    }
-    catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Failed to create clinic.", error: err });
-    }
-});
-// ✅ Clinic Login
-router.post("/login", async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({ message: "Email & password are required." });
-        }
-        const clinic = await clinic_1.default.findOne({ email });
-        if (!clinic)
-            return res.status(400).json({ message: "Invalid email or password" });
-        const isMatch = await clinic.comparePassword(password);
-        if (!isMatch)
-            return res.status(400).json({ message: "Invalid email or password" });
-        const token = jsonwebtoken_1.default.sign({ id: clinic._id, role: "clinic" }, process.env.JWT_SECRET || "secretkey", { expiresIn: "7d" });
-        res.status(200).json({
-            message: "Clinic login successful",
-            token,
-            clinic: { id: clinic._id, name: clinic.name, email: clinic.email },
+            doctors }, rest));
+        res.status(201).json({
+            message: "Clinic created successfully",
+            clinic,
         });
     }
     catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Login failed", error: err });
+        console.error("Create clinic error:", err);
+        res.status(500).json({
+            message: "Failed to create clinic",
+            error: err.message,
+        });
     }
 });
-// ✅ Get all clinics
+/* ================= GET ALL CLINICS ================= */
 router.get("/", async (_req, res) => {
     try {
-        const clinics = await clinic_1.default.find()
-            .select("-password")
-            .populate("category", "name");
-        res.status(200).json(clinics);
+        const clinics = await clinic_1.default.find().populate("dermaCategory", "name");
+        res.json(clinics);
     }
     catch (err) {
-        res.status(500).json({ message: "Failed to fetch clinics.", error: err });
+        res.status(500).json({ message: "Failed to fetch clinics" });
     }
 });
-// ✅ Get single clinic
+/* ================= GET SINGLE CLINIC ================= */
 router.get("/:id", async (req, res) => {
     try {
-        const clinic = await clinic_1.default.findById(req.params.id)
-            .select("-password")
-            .populate("category", "name");
-        if (!clinic)
+        const clinic = await clinic_1.default.findById(req.params.id).populate("dermaCategory", "name");
+        if (!clinic) {
             return res.status(404).json({ message: "Clinic not found" });
-        res.status(200).json(clinic);
+        }
+        res.json(clinic);
     }
     catch (err) {
-        res.status(500).json({ message: "Failed to fetch clinic.", error: err });
+        res.status(500).json({ message: "Failed to fetch clinic" });
     }
 });
-// ✅ Update clinic
+/* ================= UPDATE CLINIC ================= */
 router.put("/:id", async (req, res) => {
     try {
-        const { name, mobile, whatsapp, mapLink, address, verified, trusted, images, category, } = req.body;
-        if (category) {
-            const categoryExists = await clinicCategory_1.default.findById(category);
-            if (!categoryExists) {
-                return res.status(400).json({ message: "Invalid clinic category." });
-            }
-        }
-        const updatedClinic = await clinic_1.default.findByIdAndUpdate(req.params.id, { name, mobile, whatsapp, mapLink, address, verified, trusted, images, category }, { new: true })
-            .select("-password")
-            .populate("category", "name");
-        if (!updatedClinic) {
+        const updated = await clinic_1.default.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate("dermaCategory", "name");
+        if (!updated) {
             return res.status(404).json({ message: "Clinic not found" });
         }
-        res.status(200).json(updatedClinic);
+        res.json(updated);
     }
     catch (err) {
-        console.error("Update clinic error:", err);
-        res.status(500).json({ message: "Failed to update clinic.", error: err });
+        res.status(500).json({ message: "Failed to update clinic" });
     }
 });
-// ✅ Delete clinic
+/* ================= DELETE CLINIC ================= */
 router.delete("/:id", async (req, res) => {
     try {
-        const deletedClinic = await clinic_1.default.findByIdAndDelete(req.params.id);
-        if (!deletedClinic)
+        const deleted = await clinic_1.default.findByIdAndDelete(req.params.id);
+        if (!deleted) {
             return res.status(404).json({ message: "Clinic not found" });
-        res.status(200).json({ message: "Clinic deleted successfully" });
+        }
+        res.json({ message: "Clinic deleted successfully" });
     }
     catch (err) {
-        res.status(500).json({ message: "Failed to delete clinic.", error: err });
+        res.status(500).json({ message: "Failed to delete clinic" });
     }
 });
 exports.default = router;

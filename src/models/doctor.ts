@@ -8,33 +8,70 @@ export interface IDoctor extends Document {
   specialist: string;
   email: string;
   password: string;
-  createdAt: Date;
+  description?: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-const DoctorSchema: Schema = new Schema(
+const DoctorSchema = new Schema<IDoctor>(
   {
-    title: { type: String, required: true },
-    firstName: { type: String, required: true, trim: true },
-    lastName: { type: String, required: true, trim: true },
-    specialist: { type: String, required: true },
-    email: { type: String, required: true, unique: true, trim: true },
-    password: { type: String, required: true },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    firstName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    lastName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    specialist: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+
+    password: {
+      type: String,
+      required: true,
+      select: false,
+    },
+
+    description: {
+      type: String,
+      trim: true,
+    },
   },
   { timestamps: true }
 );
 
-// Hash password before saving
+/* ===== HASH PASSWORD ===== */
 DoctorSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-// Compare passwords
-DoctorSchema.methods.comparePassword = async function (candidatePassword: string) {
-  return await bcrypt.compare(candidatePassword, this.password);
+/* ===== COMPARE PASSWORD ===== */
+DoctorSchema.methods.comparePassword = async function (
+  candidatePassword: string
+) {
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
 export default mongoose.model<IDoctor>("Doctor", DoctorSchema);

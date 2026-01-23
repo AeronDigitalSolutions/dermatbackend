@@ -39,21 +39,46 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const adminSchema = new mongoose_1.Schema({
-    empId: { type: String, required: true },
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    number: { type: String },
-    password: { type: String, required: true },
-    role: { type: String, enum: ["admin", "superadmin"], default: "admin" }, // 👈 default
+    empId: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    name: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true,
+    },
+    phone: {
+        type: String,
+        trim: true,
+    },
+    password: {
+        type: String,
+        required: true,
+        select: false, // 🔐 hidden by default
+    },
+    role: {
+        type: String,
+        enum: ["admin", "superadmin", "manager"],
+        default: "admin",
+    },
 }, { timestamps: true });
-// Hash password before save
+/* ===== HASH PASSWORD ===== */
 adminSchema.pre("save", async function (next) {
     if (!this.isModified("password"))
         return next();
     this.password = await bcryptjs_1.default.hash(this.password, 10);
     next();
 });
-// Compare password
+/* ===== COMPARE PASSWORD ===== */
 adminSchema.methods.comparePassword = async function (enteredPassword) {
     return bcryptjs_1.default.compare(enteredPassword, this.password);
 };

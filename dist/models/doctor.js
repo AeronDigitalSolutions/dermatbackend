@@ -39,23 +39,52 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const DoctorSchema = new mongoose_1.Schema({
-    title: { type: String, required: true },
-    firstName: { type: String, required: true, trim: true },
-    lastName: { type: String, required: true, trim: true },
-    specialist: { type: String, required: true },
-    email: { type: String, required: true, unique: true, trim: true },
-    password: { type: String, required: true },
+    title: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    firstName: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    lastName: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    specialist: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true,
+    },
+    password: {
+        type: String,
+        required: true,
+        select: false,
+    },
+    description: {
+        type: String,
+        trim: true,
+    },
 }, { timestamps: true });
-// Hash password before saving
+/* ===== HASH PASSWORD ===== */
 DoctorSchema.pre("save", async function (next) {
     if (!this.isModified("password"))
         return next();
-    const salt = await bcryptjs_1.default.genSalt(10);
-    this.password = await bcryptjs_1.default.hash(this.password, salt);
+    this.password = await bcryptjs_1.default.hash(this.password, 10);
     next();
 });
-// Compare passwords
+/* ===== COMPARE PASSWORD ===== */
 DoctorSchema.methods.comparePassword = async function (candidatePassword) {
-    return await bcryptjs_1.default.compare(candidatePassword, this.password);
+    return bcryptjs_1.default.compare(candidatePassword, this.password);
 };
 exports.default = mongoose_1.default.model("Doctor", DoctorSchema);

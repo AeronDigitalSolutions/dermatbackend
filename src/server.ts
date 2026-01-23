@@ -33,10 +33,16 @@ const server = express();
 // -------------------- MIDDLEWARE --------------------
 server.use(
   cors({
-    origin: "https://drdermatwebsite.vercel.app", // Replace with your actual Vercel URL
+    origin: [
+      "http://localhost:3000",   // NEXT.js dev
+      "http://localhost:5000",   // Backend if needed
+      "https://drdermatwebsite.vercel.app" // Production
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
   })
 );
+
 server.use(express.json({ limit: "50mb" }));
 
 // -------------------- STATIC FILES --------------------

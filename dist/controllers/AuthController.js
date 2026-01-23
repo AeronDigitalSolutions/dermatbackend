@@ -7,81 +7,95 @@ exports.userLogin = exports.userSignup = exports.adminLogin = exports.adminSignu
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const admin_1 = __importDefault(require("../models/admin"));
 const user_1 = __importDefault(require("../models/user"));
-// Helper function to generate JWT
+/* ================= JWT HELPER ================= */
 const generateToken = (id, role) => {
-    return jsonwebtoken_1.default.sign({ id, role }, process.env.JWT_SECRET || "secret", {
-        expiresIn: "1h",
-    });
+    return jsonwebtoken_1.default.sign({ id, role }, process.env.JWT_SECRET || "secret", { expiresIn: "1h" });
 };
-// ------------------ ADMIN SIGNUP ------------------
+/* ================= ADMIN SIGNUP ================= */
 const adminSignup = async (req, res) => {
     try {
-        const { empId, name, email, number, password, role } = req.body;
-        if (!email || !password || !empId) {
+        const { empId, name, email, phone, password, role } = req.body;
+        if (!empId || !email || !password) {
             return res.status(400).json({ message: "Required fields missing" });
         }
         const existing = await admin_1.default.findOne({ email });
         if (existing) {
             return res.status(400).json({ message: "Email already registered" });
         }
-        // ✅ allow setting role if provided, default "admin"
+        const normalizedRole = role === "superadmin" || role === "manager" ? role : "admin";
         const newAdmin = await admin_1.default.create({
             empId,
             name,
             email,
-            number,
-            password,
-            role: role === "superadmin" ? "superadmin" : "admin",
+            phone, // ✅ FIXED (was number)
+            password, // 🔐 hashed by model
+            role: normalizedRole,
         });
         const token = generateToken(newAdmin._id.toString(), newAdmin.role);
         res.status(201).json({
             message: "Admin signup successful",
             token,
-            role: newAdmin.role, // ✅ include role
+            role: newAdmin.role,
             admin: {
                 id: newAdmin._id,
+                empId: newAdmin.empId,
                 name: newAdmin.name,
                 email: newAdmin.email,
+                phone: newAdmin.phone,
                 role: newAdmin.role,
             },
         });
     }
     catch (err) {
-        res
-            .status(500)
-            .json({ message: "Admin signup failed", error: err.message });
+        console.error("Admin signup error:", err);
+        res.status(500).json({
+            message: "Admin signup failed",
+            error: err.message,
+        });
     }
 };
 exports.adminSignup = adminSignup;
-// ------------------ ADMIN LOGIN ------------------
+/* ================= ADMIN LOGIN ================= */
 const adminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const admin = await admin_1.default.findOne({ email });
-        if (!admin)
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+        // 🔥 CRITICAL FIX: explicitly fetch password
+        const admin = await admin_1.default.findOne({ email }).select("+password");
+        if (!admin) {
             return res.status(400).json({ message: "Invalid email or password" });
+        }
         const isMatch = await admin.comparePassword(password);
-        if (!isMatch)
+        if (!isMatch) {
             return res.status(400).json({ message: "Invalid email or password" });
+        }
         const token = generateToken(admin._id.toString(), admin.role);
         res.json({
             message: `${admin.role} login successful`,
             token,
-            role: admin.role, // ✅ include role
+            role: admin.role,
             admin: {
                 id: admin._id,
+                empId: admin.empId,
                 name: admin.name,
                 email: admin.email,
+                phone: admin.phone,
                 role: admin.role,
             },
         });
     }
     catch (err) {
-        res.status(500).json({ message: "Login failed", error: err.message });
+        console.error("Admin login error:", err);
+        res.status(500).json({
+            message: "Login failed",
+            error: err.message,
+        });
     }
 };
 exports.adminLogin = adminLogin;
-// ------------------ USER SIGNUP ------------------
+/* ================= USER SIGNUP ================= */
 const userSignup = async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -94,40 +108,64 @@ const userSignup = async (req, res) => {
         if (existing) {
             return res.status(400).json({ message: "Email already registered" });
         }
-        const newUser = await user_1.default.create({ name, email, password });
+        const patientId = "PAT" + Date.now(); // Generate unique patient ID
+        const newUser = await user_1.default.create({
+            patientId,
+            name,
+            email,
+            password, // 🔐 hashed by model
+        });
         const token = generateToken(newUser._id.toString(), "user");
         res.status(201).json({
             message: "User signup successful",
             token,
-            role: "user", // ✅ include role
-            user: { id: newUser._id, name: newUser.name, email: newUser.email },
+            role: "user",
+            user: {
+                id: newUser._id,
+                name: newUser.name,
+                email: newUser.email,
+            },
         });
     }
     catch (err) {
-        res.status(500).json({ message: "User signup failed", error: err.message });
+        console.error("User signup error:", err);
+        res.status(500).json({
+            message: "User signup failed",
+            error: err.message,
+        });
     }
 };
 exports.userSignup = userSignup;
-// ------------------ USER LOGIN ------------------
+/* ================= USER LOGIN ================= */
 const userLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await user_1.default.findOne({ email });
-        if (!user)
+        const user = await user_1.default.findOne({ email }).select("+password");
+        if (!user) {
             return res.status(400).json({ message: "Invalid email or password" });
+        }
         const isMatch = await user.comparePassword(password);
-        if (!isMatch)
+        if (!isMatch) {
             return res.status(400).json({ message: "Invalid email or password" });
+        }
         const token = generateToken(user._id.toString(), "user");
         res.json({
             message: "User login successful",
             token,
-            role: "user", // ✅ include role
-            user: { id: user._id, name: user.name, email: user.email },
+            role: "user",
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+            },
         });
     }
     catch (err) {
-        res.status(500).json({ message: "Login failed", error: err.message });
+        console.error("User login error:", err);
+        res.status(500).json({
+            message: "Login failed",
+            error: err.message,
+        });
     }
 };
 exports.userLogin = userLogin;

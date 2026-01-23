@@ -1,45 +1,60 @@
 import express from "express";
 import User from "../models/user";
-import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
-// ✅ Middleware to check token
-const authMiddleware = async (req: any, res: any, next: any) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
+/* ================= CREATE USER ================= */
+router.post("/", async (req, res) => {
   try {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET || "secret");
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: "Invalid token" });
-  }
-};
+    const { patientId, name, email, contactNo, address } = req.body;
 
-// ✅ GET /api/users/me — fetch logged in user's profile
-router.get("/me", authMiddleware, async (req: any, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch profile" });
+    if (!patientId || !name || !email) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const exists = await User.findOne({ email });
+    if (exists) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const user = await User.create({
+      patientId,
+      name,
+      email,
+      contactNo,
+      address,
+    });
+
+    res.status(201).json({
+      message: "User created successfully",
+      user,
+    });
+  } catch (err: any) {
+    console.error("Create user error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// Existing get all users
-router.get("/", async (req, res) => {
+/* ================= GET ALL USERS ================= */
+router.get("/", async (_req, res) => {
   try {
-    const users = await User.find({}, "-password");
-    res.status(200).json(users);
-  } catch (err) {
+    const users = await User.find().sort({ createdAt: -1 });
+    res.json(users);
+  } catch {
     res.status(500).json({ message: "Failed to fetch users" });
+  }
+});
+
+/* ================= DELETE USER ================= */
+router.delete("/:id", async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ message: "User deleted successfully" });
+  } catch {
+    res.status(500).json({ message: "Delete failed" });
   }
 });
 

@@ -1,53 +1,131 @@
-// models/clinic.ts
 import mongoose, { Schema, Document } from "mongoose";
-import bcrypt from "bcryptjs";
 
-export interface IClinic extends Document {
+interface IDoctor {
   name: string;
-  mobile: string;
-  whatsapp?: string;
-  mapLink?: string;
-  address: string;
-  verified: boolean;
-  trusted: boolean;
-  images: string[]; // ✅ multiple images
-  email: string;
-  password: string;
-  category: mongoose.Types.ObjectId;
-  comparePassword(candidate: string): Promise<boolean>;
+  regNo: string;
+  specialization: string;
 }
 
-const ClinicSchema: Schema = new Schema(
+export interface IClinic extends Document {
+  cuc: string;
+
+  clinicName: string;
+  clinicType?: string;
+  ownerName?: string;
+  website?: string;
+
+  dermaCategory: mongoose.Types.ObjectId;
+
+  clinicLogo?: string;
+  bannerImage?: string;
+  specialOffers?: string[];
+  rateCard?: string[];
+  photos?: string[];
+  videos?: string[];
+  certifications?: string[];
+
+  doctors: IDoctor[];
+
+  address: string;
+  city?: string;
+  services?: string;
+  sector?: string;
+  pincode?: string;
+  mapLink?: string;
+
+  contactNumber?: string;
+  whatsapp?: string;
+  email: string;
+  workingHours?: string;
+
+  licenseNo?: string;
+  experience?: string;
+
+  treatmentsAvailable?: string;
+  availableServices?: string;
+
+  consultationFee?: string;
+  bookingMode?: string;
+
+  clinicDescription?: string;
+
+  instagram?: string;
+  linkedin?: string;
+  facebook?: string;
+
+  standardPlanLink?: string;
+
+  clinicStatus?: string;
+}
+
+const DoctorSchema = new Schema<IDoctor>(
   {
     name: { type: String, required: true },
-    mobile: { type: String, required: true },
-    whatsapp: { type: String },
-    mapLink: { type: String },
-    address: { type: String, required: true },
-    verified: { type: Boolean, default: false },
-    trusted: { type: Boolean, default: false },
-    images: { type: [String], required: true }, // ✅ array of image URLs
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    category: {
+    regNo: { type: String, required: true },
+    specialization: { type: String, required: true },
+  },
+  { _id: false }
+);
+
+const ClinicSchema = new Schema<IClinic>(
+  {
+    cuc: { type: String, required: true, unique: true },
+
+    clinicName: { type: String, required: true },
+    clinicType: String,
+    ownerName: String,
+    website: String,
+
+    dermaCategory: {
       type: Schema.Types.ObjectId,
       ref: "ClinicCategory",
       required: true,
     },
+
+    clinicLogo: String,
+    bannerImage: String,
+    specialOffers: [String],
+    rateCard: [String],
+    photos: [String],
+    videos: [String],
+    certifications: [String],
+
+    doctors: [DoctorSchema],
+
+    address: { type: String, required: true },
+    city: String,
+    services: String,
+    sector: String,
+    pincode: String,
+    mapLink: String,
+
+    contactNumber: String,
+    whatsapp: String,
+    email: { type: String, required: true },
+
+    workingHours: String,
+
+    licenseNo: String,
+    experience: String,
+
+    treatmentsAvailable: String,
+    availableServices: String,
+
+    consultationFee: String,
+    bookingMode: String,
+
+    clinicDescription: String,
+
+    instagram: String,
+    linkedin: String,
+    facebook: String,
+
+    standardPlanLink: String,
+
+    clinicStatus: { type: String, default: "Open" },
   },
   { timestamps: true }
 );
-
-ClinicSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
-ClinicSchema.methods.comparePassword = async function (candidate: string) {
-  return await bcrypt.compare(candidate, this.password);
-};
 
 export default mongoose.models.Clinic ||
   mongoose.model<IClinic>("Clinic", ClinicSchema);

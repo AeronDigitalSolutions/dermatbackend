@@ -32,39 +32,54 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-// models/clinic.ts
 const mongoose_1 = __importStar(require("mongoose"));
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const ClinicSchema = new mongoose_1.Schema({
+const DoctorSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
-    mobile: { type: String, required: true },
-    whatsapp: { type: String },
-    mapLink: { type: String },
-    address: { type: String, required: true },
-    verified: { type: Boolean, default: false },
-    trusted: { type: Boolean, default: false },
-    images: { type: [String], required: true }, // ✅ array of image URLs
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    category: {
+    regNo: { type: String, required: true },
+    specialization: { type: String, required: true },
+}, { _id: false });
+const ClinicSchema = new mongoose_1.Schema({
+    cuc: { type: String, required: true, unique: true },
+    clinicName: { type: String, required: true },
+    clinicType: String,
+    ownerName: String,
+    website: String,
+    dermaCategory: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: "ClinicCategory",
         required: true,
     },
+    clinicLogo: String,
+    bannerImage: String,
+    specialOffers: [String],
+    rateCard: [String],
+    photos: [String],
+    videos: [String],
+    certifications: [String],
+    doctors: [DoctorSchema],
+    address: { type: String, required: true },
+    city: String,
+    services: String,
+    sector: String,
+    pincode: String,
+    mapLink: String,
+    contactNumber: String,
+    whatsapp: String,
+    email: { type: String, required: true },
+    workingHours: String,
+    licenseNo: String,
+    experience: String,
+    treatmentsAvailable: String,
+    availableServices: String,
+    consultationFee: String,
+    bookingMode: String,
+    clinicDescription: String,
+    instagram: String,
+    linkedin: String,
+    facebook: String,
+    standardPlanLink: String,
+    clinicStatus: { type: String, default: "Open" },
 }, { timestamps: true });
-ClinicSchema.pre("save", async function (next) {
-    if (!this.isModified("password"))
-        return next();
-    const salt = await bcryptjs_1.default.genSalt(10);
-    this.password = await bcryptjs_1.default.hash(this.password, salt);
-    next();
-});
-ClinicSchema.methods.comparePassword = async function (candidate) {
-    return await bcryptjs_1.default.compare(candidate, this.password);
-};
 exports.default = mongoose_1.default.models.Clinic ||
     mongoose_1.default.model("Clinic", ClinicSchema);

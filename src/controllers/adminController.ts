@@ -4,9 +4,9 @@ import Admin from "../models/admin";
 /* ================= CREATE ADMIN ================= */
 export const createAdmin = async (req: Request, res: Response) => {
   try {
-    const { userId, name, email, phone, password, accessLevel } = req.body;
+    const { name, email, phone, password, accessLevel } = req.body;
 
-    if (!userId || !name || !email || !password) {
+    if (!name || !email || !password) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -15,19 +15,17 @@ export const createAdmin = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Admin already exists" });
     }
 
-    const normalizedRole = ["admin", "superadmin", "manager"].includes(
-      accessLevel?.toLowerCase()
-    )
-      ? accessLevel.toLowerCase()
+    const role = ["admin", "superadmin", "manager"].includes(accessLevel)
+      ? accessLevel
       : "admin";
 
     const admin = await Admin.create({
-      empId: userId,
+      empId: `ADM-${Date.now()}-${Math.floor(Math.random() * 1000)}`, // 🔥 SAFE
       name,
-      email,
+      email: email.toLowerCase(),
       phone,
       password,
-      role: normalizedRole,
+      role,
     });
 
     res.status(201).json({
@@ -41,8 +39,16 @@ export const createAdmin = async (req: Request, res: Response) => {
         role: admin.role,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Create Admin Error:", error);
+
+    // 🔍 Duplicate key error (MongoDB)
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: "Admin with same email or ID already exists",
+      });
+    }
+
     res.status(500).json({ message: "Server error" });
   }
 };

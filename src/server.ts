@@ -26,6 +26,9 @@ import quizRoutes from "./routes/quizRoutes";
 import treatmentShortsRoutes from "./routes/treatmentshortsRoutes";
 import userProfileRoutes from "./routes/userinformationRoutes";
 import orderRoutes from "./routes/orderRoutes";
+import b2bCategoryRoutes from "./routes/b2bCategories";
+import b2bProductRoutes from "./routes/b2bProducts";
+
 dotenv.config();
 
 const server = express();
@@ -75,6 +78,8 @@ server.use("/api/quiz", quizRoutes);
 server.use("/api/treatment-shorts", treatmentShortsRoutes);
 server.use("/api/userprofile", userProfileRoutes);
 server.use("/api/orders", orderRoutes);
+server.use("/api/b2b-categories", b2bCategoryRoutes);
+server.use("/api/b2b-products", b2bProductRoutes);
 
 // -------------------- MONGODB CONNECTION --------------------
 mongoose

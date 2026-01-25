@@ -1,6 +1,6 @@
 import mongoose, { Schema, model, models, HydratedDocument } from "mongoose";
 
-/** Interfaces for plain data shapes */
+/** ================= REVIEW INTERFACE ================= */
 export interface IReview {
   rating: number;
   comment: string;
@@ -9,25 +9,67 @@ export interface IReview {
   updatedAt?: Date;
 }
 
+/** ================= PRODUCT INTERFACE ================= */
 export interface IProduct {
-  _id?: string; // ✅ use MongoDB’s built-in ObjectId
+  _id?: string;
+
+  /* ===== BASIC INFO ===== */
+  productSKU: string;
+  productName: string;
   category: string;
-  company: string;
-  name: string;
-  quantity: number;
-  price: number;
-  discountPrice: number;
+  // subCategory: string; ❌ removed logically
+  brandName: string;
+
+  /* ===== DESCRIPTION ===== */
   description: string;
-  images: string[];
+  ingredients: string;
+  targetConcerns: string;
+  usageInstructions: string;
+  benefits: string;
+  certifications: string;
+
+  /* ===== PRICING ===== */
+  netQuantity: string;
+  mrpPrice: number;
+  discountedPrice: number;
+  discountPercent: number;
+  taxIncluded: boolean;
+
+  /* ===== COMPLIANCE ===== */
+  expiryDate: Date;
+  manufacturerName: string;
+  licenseNumber: string;
+  packagingType: string;
+
+  /* ===== MEDIA ===== */
+  productImages: string[];
+  productShortVideo?: string;
+  howToUseVideo?: string;
+
+  /* ===== META ===== */
+  gender: string;
+  skinHairType: string;
+  barcode: string;
+  productURL?: string;
+
+  /* ===== SYSTEM CONTROLLED ===== */
+  rating: number;
+  shippingTime: string;
+  returnPolicy: string;
+  availabilityStatus: string;
+  stockStatus: string;
+  activeStatus: boolean;
+  buyNow: boolean;
+  checkAvailability: boolean;
+  dermatologistRecommended: boolean;
+
   reviews: IReview[];
+
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-/** Mongoose Document type */
-export type ProductDocument = HydratedDocument<IProduct>;
-
-/** Subdocument schema for reviews */
+/** ================= REVIEW SCHEMA ================= */
 const ReviewSchema = new Schema<IReview>(
   {
     rating: { type: Number, required: true },
@@ -39,23 +81,59 @@ const ReviewSchema = new Schema<IReview>(
   { _id: false }
 );
 
-/** Main product schema */
+/** ================= PRODUCT SCHEMA ================= */
 const ProductSchema = new Schema<ProductDocument>(
   {
+    productSKU: { type: String, required: true, unique: true },
+    productName: { type: String, required: true },
     category: { type: String, required: true },
-    company: { type: String, required: true },
-    name: { type: String, required: true },
-    quantity: { type: Number, required: true },
-    price: { type: Number, required: true },
-    discountPrice: { type: Number, required: true },
-    description: { type: String, required: true },
-    images: { type: [String], required: true, default: [] },
+    // subCategory: { type: String }, ❌ intentionally disabled
+    brandName: { type: String },
+
+    description: { type: String },
+    ingredients: { type: String },
+    targetConcerns: { type: String },
+    usageInstructions: { type: String },
+    benefits: { type: String },
+    certifications: { type: String },
+
+    netQuantity: { type: String },
+    mrpPrice: { type: Number },
+    discountedPrice: { type: Number },
+    discountPercent: { type: Number },
+    taxIncluded: { type: Boolean, default: true },
+
+    expiryDate: { type: Date },
+    manufacturerName: { type: String },
+    licenseNumber: { type: String },
+    packagingType: { type: String },
+
+    productImages: { type: [String], default: [] },
+    productShortVideo: { type: String },
+    howToUseVideo: { type: String },
+
+    gender: { type: String, default: "Unisex" },
+    skinHairType: { type: String },
+    barcode: { type: String },
+    productURL: { type: String },
+
+    rating: { type: Number, default: 0 },
+    shippingTime: { type: String, default: "5-7 Business Days" },
+    returnPolicy: { type: String, default: "No Return Policy" },
+    availabilityStatus: { type: String, default: "Available" },
+    stockStatus: { type: String, default: "In Stock" },
+    activeStatus: { type: Boolean, default: true },
+    buyNow: { type: Boolean, default: true },
+    checkAvailability: { type: Boolean, default: true },
+    dermatologistRecommended: { type: Boolean, default: false },
+
     reviews: { type: [ReviewSchema], default: [] },
   },
   { timestamps: true }
 );
 
-/** Prevent model overwrite in dev/hot reload */
+export type ProductDocument = HydratedDocument<IProduct>;
+
 const ProductModel =
   (models.Product as mongoose.Model<ProductDocument>) ||
   model<ProductDocument>("Product", ProductSchema);

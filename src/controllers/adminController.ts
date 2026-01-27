@@ -3,9 +3,13 @@ import Admin from "../models/admin";
 
 /* ================= CREATE ADMIN ================= */
 export const createAdmin = async (req: Request, res: Response) => {
+    console.log("🔥 RAW REQ BODY:", req.body);
+
   try {
     let { empId, name, email, phone, password, accessLevel } = req.body;
 
+
+    
     // ✅ ALWAYS generate empId on backend
     if (!empId) {
       empId = `ADM-${Date.now()}-${Math.floor(Math.random() * 1000)}`;

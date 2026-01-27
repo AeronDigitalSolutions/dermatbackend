@@ -99,18 +99,7 @@ return res
     sameSite: "none",         // 🔥 REQUIRED (cross-site)
     maxAge: 24 * 60 * 60 * 1000,
   })
-  .json({
-    message: `${admin.role} login successful`,
-    role: admin.role,
-    admin: {
-      id: admin._id,
-      empId: admin.empId,
-      name: admin.name,
-      email: admin.email,
-      phone: admin.phone,
-      role: admin.role,
-    },
-  });
+  
 
   } catch (err: any) {
     console.error("Admin login error:", err);

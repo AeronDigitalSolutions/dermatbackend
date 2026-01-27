@@ -6,13 +6,13 @@ export const createAdmin = async (req: Request, res: Response) => {
   try {
     let { empId, name, email, phone, password, accessLevel } = req.body;
 
-    // ✅ BACKEND SAFETY (CRITICAL FIX)
+    // ✅ ALWAYS generate empId on backend
     if (!empId) {
       empId = `ADM-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     }
 
-    // ✅ STRICT VALIDATION (UNCHANGED)
-    if (!empId || !name || !email || !password) {
+    // ✅ REQUIRED FIELDS
+    if (!name || !email || !password) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -39,27 +39,12 @@ export const createAdmin = async (req: Request, res: Response) => {
       role,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Admin created successfully",
-      admin: {
-        id: admin._id,
-        empId: admin.empId,
-        name: admin.name,
-        email: admin.email,
-        phone: admin.phone,
-        role: admin.role,
-      },
+      admin,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Create Admin Error:", error);
-    console.log("REQ BODY:", req.body);
-
-    if (error.code === 11000) {
-      return res.status(400).json({
-        message: "Admin with same email or ID already exists",
-      });
-    }
-
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };

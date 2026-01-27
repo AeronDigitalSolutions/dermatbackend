@@ -5,7 +5,7 @@ import { createAdmin } from "../controllers/adminController";
 const router = express.Router();
 
 /* ================= CREATE ADMIN ================= */
-// router.post("/", createAdmin);
+router.post("/", createAdmin);
 router.post("/", (req, res) => {
   console.log("🔥 ADMIN ROUTE HIT");
   console.log("🔥 HEADERS:", req.headers);

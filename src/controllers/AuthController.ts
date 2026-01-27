@@ -92,19 +92,26 @@ export const adminLogin = async (req: Request, res: Response) => {
 
     const token = generateToken(admin._id.toString(), admin.role);
 
-    return res.json({
-      message: `${admin.role} login successful`,
-      token,
+return res
+  .cookie("token", token, {
+    httpOnly: false,          // keep false for now
+    secure: true,             // 🔥 REQUIRED (HTTPS)
+    sameSite: "none",         // 🔥 REQUIRED (cross-site)
+    maxAge: 24 * 60 * 60 * 1000,
+  })
+  .json({
+    message: `${admin.role} login successful`,
+    role: admin.role,
+    admin: {
+      id: admin._id,
+      empId: admin.empId,
+      name: admin.name,
+      email: admin.email,
+      phone: admin.phone,
       role: admin.role,
-      admin: {
-        id: admin._id,
-        empId: admin.empId,
-        name: admin.name,
-        email: admin.email,
-        phone: admin.phone,
-        role: admin.role,
-      },
-    });
+    },
+  });
+
   } catch (err: any) {
     console.error("Admin login error:", err);
     return res.status(500).json({

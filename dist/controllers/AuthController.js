@@ -60,21 +60,33 @@ const adminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return res.status(400).json({ message: "Email and password are required" });
+            return res.status(400).json({
+                message: "Email and password are required",
+            });
         }
-        // 🔥 CRITICAL FIX: explicitly fetch password
-        const admin = await admin_1.default.findOne({ email }).select("+password");
+        const admin = await admin_1.default
+            .findOne({ email: email.toLowerCase() })
+            .select("+password");
         if (!admin) {
             return res.status(400).json({ message: "Invalid email or password" });
+        }
+        if (!admin.comparePassword) {
+            throw new Error("comparePassword method not found on Admin model");
         }
         const isMatch = await admin.comparePassword(password);
         if (!isMatch) {
             return res.status(400).json({ message: "Invalid email or password" });
         }
         const token = generateToken(admin._id.toString(), admin.role);
-        res.json({
+        return res
+            .cookie("token", token, {
+            httpOnly: false, // keep false for now
+            secure: true, // 🔥 REQUIRED (HTTPS)
+            sameSite: "none", // 🔥 REQUIRED (cross-site)
+            maxAge: 24 * 60 * 60 * 1000,
+        })
+            .json({
             message: `${admin.role} login successful`,
-            token,
             role: admin.role,
             admin: {
                 id: admin._id,
@@ -88,7 +100,7 @@ const adminLogin = async (req, res) => {
     }
     catch (err) {
         console.error("Admin login error:", err);
-        res.status(500).json({
+        return res.status(500).json({
             message: "Login failed",
             error: err.message,
         });

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
-/** Subdocument schema for reviews */
+/** ================= REVIEW SCHEMA ================= */
 const ReviewSchema = new mongoose_1.Schema({
     rating: { type: Number, required: true },
     comment: { type: String, required: true },
@@ -9,19 +9,46 @@ const ReviewSchema = new mongoose_1.Schema({
     createdAt: { type: Date, default: () => new Date() },
     updatedAt: { type: Date, default: () => new Date() },
 }, { _id: false });
-/** Main product schema */
+/** ================= PRODUCT SCHEMA ================= */
 const ProductSchema = new mongoose_1.Schema({
+    productSKU: { type: String, required: true, unique: true },
+    productName: { type: String, required: true },
     category: { type: String, required: true },
-    company: { type: String, required: true },
-    name: { type: String, required: true },
-    quantity: { type: Number, required: true },
-    price: { type: Number, required: true },
-    discountPrice: { type: Number, required: true },
-    description: { type: String, required: true },
-    images: { type: [String], required: true, default: [] },
+    // subCategory: { type: String }, ❌ intentionally disabled
+    brandName: { type: String },
+    description: { type: String },
+    ingredients: { type: String },
+    targetConcerns: { type: String },
+    usageInstructions: { type: String },
+    benefits: { type: String },
+    certifications: { type: String },
+    netQuantity: { type: String },
+    mrpPrice: { type: Number },
+    discountedPrice: { type: Number },
+    discountPercent: { type: Number },
+    taxIncluded: { type: Boolean, default: true },
+    expiryDate: { type: Date },
+    manufacturerName: { type: String },
+    licenseNumber: { type: String },
+    packagingType: { type: String },
+    productImages: { type: [String], default: [] },
+    productShortVideo: { type: String },
+    howToUseVideo: { type: String },
+    gender: { type: String, default: "Unisex" },
+    skinHairType: { type: String },
+    barcode: { type: String },
+    productURL: { type: String },
+    rating: { type: Number, default: 0 },
+    shippingTime: { type: String, default: "5-7 Business Days" },
+    returnPolicy: { type: String, default: "No Return Policy" },
+    availabilityStatus: { type: String, default: "Available" },
+    stockStatus: { type: String, default: "In Stock" },
+    activeStatus: { type: Boolean, default: true },
+    buyNow: { type: Boolean, default: true },
+    checkAvailability: { type: Boolean, default: true },
+    dermatologistRecommended: { type: Boolean, default: false },
     reviews: { type: [ReviewSchema], default: [] },
 }, { timestamps: true });
-/** Prevent model overwrite in dev/hot reload */
 const ProductModel = mongoose_1.models.Product ||
     (0, mongoose_1.model)("Product", ProductSchema);
 exports.default = ProductModel;

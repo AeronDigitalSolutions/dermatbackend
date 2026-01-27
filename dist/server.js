@@ -30,19 +30,31 @@ const quizRoutes_1 = __importDefault(require("./routes/quizRoutes"));
 const treatmentshortsRoutes_1 = __importDefault(require("./routes/treatmentshortsRoutes"));
 const userinformationRoutes_1 = __importDefault(require("./routes/userinformationRoutes"));
 const orderRoutes_1 = __importDefault(require("./routes/orderRoutes"));
+const b2bCategories_1 = __importDefault(require("./routes/b2bCategories"));
+const b2bProducts_1 = __importDefault(require("./routes/b2bProducts"));
 dotenv_1.default.config();
 const server = (0, express_1.default)();
 // -------------------- MIDDLEWARE --------------------
 server.use((0, cors_1.default)({
-    origin: [
-        "http://localhost:3000", // NEXT.js dev
-        "http://localhost:5000", // Backend if needed
-        "https://drdermatwebsite.vercel.app" // Production
-    ],
+    origin: (origin, callback) => {
+        // allow server-to-server / same-origin
+        if (!origin)
+            return callback(null, true);
+        // localhost
+        if (origin === "http://localhost:3000") {
+            return callback(null, true);
+        }
+        // allow ALL vercel deployments
+        if (origin.endsWith(".vercel.app")) {
+            return callback(null, true);
+        }
+        // ❌ DO NOT THROW ERROR
+        return callback(null, false);
+    },
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
 }));
-server.use(express_1.default.json({ limit: "50mb" }));
+server.use(express_1.default.json({ limit: "100mb" }));
 // -------------------- STATIC FILES --------------------
 server.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "uploads")));
 // -------------------- ROOT ROUTE --------------------
@@ -71,6 +83,8 @@ server.use("/api/quiz", quizRoutes_1.default);
 server.use("/api/treatment-shorts", treatmentshortsRoutes_1.default);
 server.use("/api/userprofile", userinformationRoutes_1.default);
 server.use("/api/orders", orderRoutes_1.default);
+server.use("/api/b2b-categories", b2bCategories_1.default);
+server.use("/api/b2b-products", b2bProducts_1.default);
 // -------------------- MONGODB CONNECTION --------------------
 mongoose_1.default
     .connect(process.env.MONGO_URI)

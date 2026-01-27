@@ -8,40 +8,43 @@ const admin_1 = __importDefault(require("../models/admin"));
 /* ================= CREATE ADMIN ================= */
 const createAdmin = async (req, res) => {
     try {
-        const { userId, name, email, phone, password, accessLevel } = req.body;
-        if (!userId || !name || !email || !password) {
+        console.log("🔥 RAW REQ BODY:", req.body);
+        let { empId, name, email, phone, password, accessLevel } = req.body;
+        // ✅ ALWAYS generate empId on backend
+        if (!empId) {
+            empId = `ADM-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        }
+        // ✅ REQUIRED FIELDS
+        if (!name || !email || !password) {
             return res.status(400).json({ message: "Missing required fields" });
         }
-        const existingAdmin = await admin_1.default.findOne({ email });
+        const existingAdmin = await admin_1.default.findOne({
+            $or: [{ email }, { empId }],
+        });
         if (existingAdmin) {
-            return res.status(400).json({ message: "Admin already exists" });
+            return res.status(400).json({
+                message: "Admin with same email or ID already exists",
+            });
         }
-        const normalizedRole = ["admin", "superadmin", "manager"].includes(accessLevel === null || accessLevel === void 0 ? void 0 : accessLevel.toLowerCase())
-            ? accessLevel.toLowerCase()
+        const role = ["admin", "superadmin", "manager"].includes(accessLevel)
+            ? accessLevel
             : "admin";
         const admin = await admin_1.default.create({
-            empId: userId,
+            empId,
             name,
-            email,
+            email: email.toLowerCase(),
             phone,
             password,
-            role: normalizedRole,
+            role,
         });
-        res.status(201).json({
+        return res.status(201).json({
             message: "Admin created successfully",
-            admin: {
-                id: admin._id,
-                empId: admin.empId,
-                name: admin.name,
-                email: admin.email,
-                phone: admin.phone,
-                role: admin.role,
-            },
+            admin,
         });
     }
     catch (error) {
         console.error("Create Admin Error:", error);
-        res.status(500).json({ message: "Server error" });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 exports.createAdmin = createAdmin;

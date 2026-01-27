@@ -3,9 +3,10 @@ import Admin from "../models/admin";
 
 /* ================= CREATE ADMIN ================= */
 export const createAdmin = async (req: Request, res: Response) => {
-    console.log("🔥 RAW REQ BODY:", req.body);
 
   try {
+        console.log("🔥 RAW REQ BODY:", req.body);
+
     let { empId, name, email, phone, password, accessLevel } = req.body;
 
 

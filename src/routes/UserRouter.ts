@@ -6,9 +6,17 @@ const router = express.Router();
 /* ================= CREATE USER ================= */
 router.post("/", async (req, res) => {
   try {
-    const { patientId, name, email, contactNo, address } = req.body;
+    const {
+      patientId,
+      name,
+      email,
+      contactNo,
+      address,
+      password, // ✅ NEW
+    } = req.body;
 
-    if (!patientId || !name || !email) {
+    // ✅ STRICT VALIDATION
+    if (!patientId || !name || !email || !password) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -23,11 +31,19 @@ router.post("/", async (req, res) => {
       email,
       contactNo,
       address,
+      password, // ✅ REQUIRED & HASHED BY MODEL
     });
 
     res.status(201).json({
       message: "User created successfully",
-      user,
+      user: {
+        id: user._id,
+        patientId: user.patientId,
+        name: user.name,
+        email: user.email,
+        contactNo: user.contactNo,
+        address: user.address,
+      },
     });
   } catch (err: any) {
     console.error("Create user error:", err);

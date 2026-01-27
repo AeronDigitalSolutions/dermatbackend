@@ -4,9 +4,14 @@ import Admin from "../models/admin";
 /* ================= CREATE ADMIN ================= */
 export const createAdmin = async (req: Request, res: Response) => {
   try {
-    const { empId, name, email, phone, password, accessLevel } = req.body;
+    let { empId, name, email, phone, password, accessLevel } = req.body;
 
-    // ✅ STRICT VALIDATION
+    // ✅ BACKEND SAFETY (CRITICAL FIX)
+    if (!empId) {
+      empId = `ADM-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    }
+
+    // ✅ STRICT VALIDATION (UNCHANGED)
     if (!empId || !name || !email || !password) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -26,7 +31,7 @@ export const createAdmin = async (req: Request, res: Response) => {
       : "admin";
 
     const admin = await Admin.create({
-      empId, // ✅ FROM FRONTEND
+      empId,
       name,
       email: email.toLowerCase(),
       phone,
@@ -47,7 +52,7 @@ export const createAdmin = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error("Create Admin Error:", error);
-console.log("REQ BODY:", req.body);
+    console.log("REQ BODY:", req.body);
 
     if (error.code === 11000) {
       return res.status(400).json({

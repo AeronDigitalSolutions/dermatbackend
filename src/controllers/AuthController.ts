@@ -81,10 +81,6 @@ export const adminLogin = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    if (!admin.comparePassword) {
-      throw new Error("comparePassword method not found on Admin model");
-    }
-
     const isMatch = await admin.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
@@ -92,14 +88,27 @@ export const adminLogin = async (req: Request, res: Response) => {
 
     const token = generateToken(admin._id.toString(), admin.role);
 
-return res
-  .cookie("token", token, {
-    httpOnly: false,          // keep false for now
-    secure: true,             // 🔥 REQUIRED (HTTPS)
-    sameSite: "none",         // 🔥 REQUIRED (cross-site)
-    maxAge: 24 * 60 * 60 * 1000,
-  })
-  
+    return res
+      .cookie("token", token, {
+        httpOnly: false,          // readable by JS
+        secure: true,             // HTTPS (Vercel)
+        sameSite: "none",         // cross-domain
+        maxAge: 24 * 60 * 60 * 1000,
+      })
+      .status(200)
+      .json({
+        message: `${admin.role} login successful`,
+        token,                    // 🔥 THIS WAS MISSING
+        role: admin.role,
+        admin: {
+          id: admin._id,
+          empId: admin.empId,
+          name: admin.name,
+          email: admin.email,
+          phone: admin.phone,
+          role: admin.role,
+        },
+      });
 
   } catch (err: any) {
     console.error("Admin login error:", err);
@@ -109,7 +118,6 @@ return res
     });
   }
 };
-
 /* ================= USER SIGNUP ================= */
 export const userSignup = async (req: Request, res: Response) => {
   try {

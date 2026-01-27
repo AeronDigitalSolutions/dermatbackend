@@ -41,6 +41,7 @@ export const createAdmin = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error("Create Admin Error:", error);
+console.log("REQ BODY:", req.body);
 
     // 🔍 Duplicate key error (MongoDB)
     if (error.code === 11000) {

@@ -36,17 +36,28 @@ const server = express();
 // -------------------- MIDDLEWARE --------------------
 server.use(
   cors({
-    origin: [
-      "http://localhost:3000",   // NEXT.js dev
-      "http://localhost:5000",   // Backend if needed
-      "https://drdermatwebsite.vercel.app" // Production
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      // localhost
+      if (origin === "http://localhost:3000") {
+        return callback(null, true);
+      }
+
+      // allow all vercel deployments
+      if (origin.endsWith(".vercel.app")) {
+        return callback(null, true);
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
   })
 );
 
-server.use(express.json({ limit: "50mb" }));
+
+server.use(express.json({ limit: "100mb" }));
 
 // -------------------- STATIC FILES --------------------
 server.use("/uploads", express.static(path.join(process.cwd(), "uploads")));

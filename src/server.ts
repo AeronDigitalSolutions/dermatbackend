@@ -37,6 +37,7 @@ const server = express();
 server.use(
   cors({
     origin: (origin, callback) => {
+      // allow server-to-server / same-origin
       if (!origin) return callback(null, true);
 
       // localhost
@@ -44,12 +45,13 @@ server.use(
         return callback(null, true);
       }
 
-      // allow all vercel deployments
+      // allow ALL vercel deployments
       if (origin.endsWith(".vercel.app")) {
         return callback(null, true);
       }
 
-      callback(new Error("Not allowed by CORS"));
+      // ❌ DO NOT THROW ERROR
+      return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],

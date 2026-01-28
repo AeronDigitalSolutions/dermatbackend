@@ -9,12 +9,6 @@ const adminController_1 = require("../controllers/adminController");
 const router = express_1.default.Router();
 /* ================= CREATE ADMIN ================= */
 router.post("/", adminController_1.createAdmin);
-router.post("/", (req, res) => {
-    console.log("🔥 ADMIN ROUTE HIT");
-    console.log("🔥 HEADERS:", req.headers);
-    console.log("🔥 BODY:", req.body);
-    res.status(200).json({ ok: true });
-});
 /* ================= LIST ADMINS ================= */
 router.get("/", async (_req, res) => {
     try {

@@ -56,54 +56,34 @@ const adminSignup = async (req, res) => {
 };
 exports.adminSignup = adminSignup;
 /* ================= ADMIN LOGIN ================= */
+// adminLogin controller (FINAL)
 const adminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({
-                message: "Email and password are required",
-            });
-        }
-        const admin = await admin_1.default
-            .findOne({ email: email.toLowerCase() })
-            .select("+password");
+        const admin = await admin_1.default.findOne({ email: email.toLowerCase() }).select("+password");
         if (!admin) {
             return res.status(400).json({ message: "Invalid email or password" });
-        }
-        if (!admin.comparePassword) {
-            throw new Error("comparePassword method not found on Admin model");
         }
         const isMatch = await admin.comparePassword(password);
         if (!isMatch) {
             return res.status(400).json({ message: "Invalid email or password" });
         }
         const token = generateToken(admin._id.toString(), admin.role);
-        return res
-            .cookie("token", token, {
-            httpOnly: false, // keep false for now
-            secure: true, // 🔥 REQUIRED (HTTPS)
-            sameSite: "none", // 🔥 REQUIRED (cross-site)
-            maxAge: 24 * 60 * 60 * 1000,
-        })
-            .json({
-            message: `${admin.role} login successful`,
+        // 🔥 IMPORTANT: token must be in JSON
+        return res.status(200).json({
+            message: "Login successful",
+            token,
             role: admin.role,
             admin: {
                 id: admin._id,
-                empId: admin.empId,
                 name: admin.name,
                 email: admin.email,
-                phone: admin.phone,
                 role: admin.role,
             },
         });
     }
     catch (err) {
-        console.error("Admin login error:", err);
-        return res.status(500).json({
-            message: "Login failed",
-            error: err.message,
-        });
+        return res.status(500).json({ message: "Login failed" });
     }
 };
 exports.adminLogin = adminLogin;

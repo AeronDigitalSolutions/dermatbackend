@@ -63,20 +63,12 @@ export const adminSignup = async (req: Request, res: Response) => {
 };
 
 /* ================= ADMIN LOGIN ================= */
+// adminLogin controller (FINAL)
 export const adminLogin = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({
-        message: "Email and password are required",
-      });
-    }
-
-    const admin = await Admin
-      .findOne({ email: email.toLowerCase() })
-      .select("+password");
-
+    const admin = await Admin.findOne({ email: email.toLowerCase() }).select("+password");
     if (!admin) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
@@ -88,34 +80,20 @@ export const adminLogin = async (req: Request, res: Response) => {
 
     const token = generateToken(admin._id.toString(), admin.role);
 
-    return res
-      .cookie("token", token, {
-        httpOnly: false,          // readable by JS
-        secure: true,             // HTTPS (Vercel)
-        sameSite: "none",         // cross-domain
-        maxAge: 24 * 60 * 60 * 1000,
-      })
-      .status(200)
-      .json({
-        message: `${admin.role} login successful`,
-        token,                    // 🔥 THIS WAS MISSING
+    // 🔥 IMPORTANT: token must be in JSON
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      role: admin.role,
+      admin: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
         role: admin.role,
-        admin: {
-          id: admin._id,
-          empId: admin.empId,
-          name: admin.name,
-          email: admin.email,
-          phone: admin.phone,
-          role: admin.role,
-        },
-      });
-
-  } catch (err: any) {
-    console.error("Admin login error:", err);
-    return res.status(500).json({
-      message: "Login failed",
-      error: err.message,
+      },
     });
+  } catch (err) {
+    return res.status(500).json({ message: "Login failed" });
   }
 };
 /* ================= USER SIGNUP ================= */
